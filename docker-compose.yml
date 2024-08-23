@@ -1,0 +1,49 @@
+version: "3.8"
+
+volumes:
+  mongomusicdata:
+
+services:
+  #Client React
+  musicclient:
+    container_name: musicclient
+    build:
+      context: ./docker/client
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./client:/appclient
+    environment:
+      TZ: UTC
+      CHOKIDAR_USEPOLLING: true
+    tty: true
+
+  #Server Express
+  musicserver:
+    container_name: musicexpress
+    build:
+      context: ./docker/server
+    volumes:
+      - ./server:/appserver
+    ports:
+      - '5000:5000'
+    environment:
+      PORT: 5000
+      TZ: UTC
+    depends_on:
+      - mongomusic
+    tty: true
+
+  #Database Mongo
+  mongomusic:
+    container_name: musicmongo
+    restart: always
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongomusicdata:/data/db
+      - ./datascript:/datascript
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
